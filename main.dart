@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'firebase_options.dart';
-import 'ui/screens/register_screen.dart';
+import 'ui/screens/login_screen.dart';
+import 'ui/screens/home_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -19,7 +21,9 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'SBox',
-      home: RegisterScreen(),
+      home: FirebaseAuth.instance.currentUser != null
+          ? const HomeScreen()
+          : const LoginScreen(),
     );
   }
 }
