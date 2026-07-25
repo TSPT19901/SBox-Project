@@ -1,5 +1,9 @@
 import 'dart:convert';
+import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:media_store_plus/media_store_plus.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:permission_handler/permission_handler.dart';
 import '/data/repository/image_repo.dart';
 import '/model/image.dart';
 
@@ -26,6 +30,39 @@ class _PhotoDetailScreenState extends State<PhotoDetailScreen> {
     return "${date.day}/${date.month}/${date.year}  ${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}";
   }
 
+  Future<void> _saveToGallery() async {
+    final status = await Permission.storage.request();
+    if (!status.isGranted) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Permission denied. Cannot save photo.')),
+      );
+      return;
+    }
+    try {
+      final bytes = base64Decode(widget.photo.base64);
+      final tempDir = await getTemporaryDirectory();
+      final tempFile = File(
+        '${tempDir.path}/${widget.photo.name}.${widget.photo.type}',
+      );
+      await tempFile.writeAsBytes(bytes);
+      await MediaStore().saveFile(
+        tempFilePath: tempFile.path,
+        dirType: DirType.photo,
+        dirName: DirName.pictures,
+      );
+      if (!mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Photo saved to gallery!')));
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Error: $e')));
+    }
+  }
+
   Future<void> _confirmDelete() async {
     final confirm = await showDialog<bool>(
       context: context,
@@ -49,7 +86,7 @@ class _PhotoDetailScreenState extends State<PhotoDetailScreen> {
       setState(() => _isDeleting = true);
       await imageRepo.deletePhoto(widget.photo.id);
       if (!mounted) return;
-      Navigator.pop(context, true); // tells HomeScreen to reload
+      Navigator.pop(context, true);
     }
   }
 
@@ -61,6 +98,10 @@ class _PhotoDetailScreenState extends State<PhotoDetailScreen> {
       appBar: AppBar(
         title: Text(widget.photo.name, overflow: TextOverflow.ellipsis),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.save_alt_outlined),
+            onPressed: _saveToGallery,
+          ),
           IconButton(
             icon: _isDeleting
                 ? const SizedBox(
