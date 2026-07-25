@@ -19,15 +19,12 @@ class PhotoDetailScreen extends StatefulWidget {
 class _PhotoDetailScreenState extends State<PhotoDetailScreen> {
   final imageRepo = ImageRepo();
   bool _isDeleting = false;
+  bool _isSaving = false;
 
   String _formatSize(int bytes) {
     if (bytes < 1024) return "$bytes B";
     if (bytes < 1024 * 1024) return "${(bytes / 1024).toStringAsFixed(1)} KB";
     return "${(bytes / (1024 * 1024)).toStringAsFixed(1)} MB";
-  }
-
-  String _formatDate(DateTime date) {
-    return "${date.day}/${date.month}/${date.year}  ${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}";
   }
 
   Future<void> _saveToGallery() async {
@@ -39,6 +36,7 @@ class _PhotoDetailScreenState extends State<PhotoDetailScreen> {
       );
       return;
     }
+    setState(() => _isSaving = true);
     try {
       final bytes = base64Decode(widget.photo.base64);
       final tempDir = await getTemporaryDirectory();
@@ -60,6 +58,8 @@ class _PhotoDetailScreenState extends State<PhotoDetailScreen> {
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text('Error: $e')));
+    } finally {
+      if (mounted) setState(() => _isSaving = false);
     }
   }
 
@@ -90,75 +90,179 @@ class _PhotoDetailScreenState extends State<PhotoDetailScreen> {
     }
   }
 
-  @override
-  Widget build(BuildContext context) {
-    final imageBytes = base64Decode(widget.photo.base64);
-
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.photo.name, overflow: TextOverflow.ellipsis),
+  Future<void> _renamePhoto() async {
+    final controller = TextEditingController(text: widget.photo.name);
+    final newName = await showDialog<String>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Rename Photo'),
+        content: TextField(
+          controller: controller,
+          autofocus: true,
+          decoration: const InputDecoration(
+            labelText: 'Photo name',
+            border: OutlineInputBorder(),
+          ),
+        ),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.save_alt_outlined),
-            onPressed: _saveToGallery,
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
           ),
-          IconButton(
-            icon: _isDeleting
-                ? const SizedBox(
-                    width: 20,
-                    height: 20,
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  )
-                : const Icon(Icons.delete_outline, color: Colors.red),
-            onPressed: _isDeleting ? null : _confirmDelete,
-          ),
-        ],
-      ),
-      body: Column(
-        children: [
-          Expanded(
-            child: Center(
-              child: InteractiveViewer(
-                child: Image.memory(imageBytes, fit: BoxFit.contain),
-              ),
-            ),
-          ),
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              color: Colors.grey.shade50,
-              border: Border(top: BorderSide(color: Colors.grey.shade200)),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                infoRow("Name", widget.photo.name),
-                infoRow("Type", widget.photo.type.toUpperCase()),
-                infoRow("Size", _formatSize(widget.photo.size)),
-                infoRow("Added", _formatDate(widget.photo.createdAt)),
-              ],
+          TextButton(
+            onPressed: () => Navigator.pop(context, controller.text.trim()),
+            child: const Text(
+              'Rename',
+              style: TextStyle(color: Colors.deepPurple),
             ),
           ),
         ],
       ),
     );
+
+    if (newName != null && newName.isNotEmpty && newName != widget.photo.name) {
+      await imageRepo.renamePhoto(widget.photo.id, newName);
+      if (!mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Photo renamed!')));
+      Navigator.pop(context, true);
+    }
   }
 
-  Widget infoRow(String label, String value) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 5),
-      child: Row(
-        children: [
-          SizedBox(
-            width: 60,
-            child: Text(label, style: TextStyle(color: Colors.grey)),
+  @override
+  Widget build(BuildContext context) {
+    final imageBytes = base64Decode(widget.photo.base64);
+
+    return Scaffold(
+      backgroundColor: Colors.white,
+      appBar: AppBar(
+        backgroundColor: Colors.white,
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios_new, color: Colors.black),
+          onPressed: () => Navigator.pop(context),
+        ),
+        title: Text(
+          widget.photo.name,
+          overflow: TextOverflow.ellipsis,
+          style: const TextStyle(
+            color: Colors.black,
+            fontWeight: FontWeight.bold,
+            fontSize: 16,
           ),
+        ),
+      ),
+      body: Column(
+        children: [
           Expanded(
-            child: Text(
-              value,
-              style: const TextStyle(fontWeight: FontWeight.w500),
+            child: Padding(
+              padding: const EdgeInsets.all(20),
+              child: Container(
+                width: double.infinity,
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade100,
+                  borderRadius: BorderRadius.circular(24),
+                ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(24),
+                  child: InteractiveViewer(
+                    child: Image.memory(imageBytes, fit: BoxFit.contain),
+                  ),
+                ),
+              ),
             ),
+          ),
+          Container(
+            margin: const EdgeInsets.symmetric(horizontal: 20),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            decoration: BoxDecoration(
+              color: Colors.grey.shade50,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: Colors.grey.shade200),
+            ),
+            child: Row(
+              children: [
+                const Icon(Icons.image_outlined, color: Colors.grey, size: 18),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    '${widget.photo.type.toUpperCase()} • ${_formatSize(widget.photo.size)} • Added today',
+                    style: TextStyle(color: Colors.grey.shade600, fontSize: 13),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 16),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                _actionBtn(
+                  icon: Icons.drive_file_rename_outline,
+                  label: 'Rename',
+                  color: Colors.orange,
+                  bg: const Color(0xFFFFF3E0),
+                  onTap: _renamePhoto,
+                ),
+                _actionBtn(
+                  icon: _isSaving ? null : Icons.download_outlined,
+                  label: 'Save',
+                  color: Colors.deepPurple,
+                  bg: const Color(0xFFEDE7F6),
+                  onTap: _isSaving ? () {} : _saveToGallery,
+                  isLoading: _isSaving,
+                ),
+                _actionBtn(
+                  icon: Icons.delete_outline,
+                  label: 'Delete',
+                  color: Colors.redAccent,
+                  bg: const Color(0xFFFFEBEE),
+                  onTap: _isDeleting ? () {} : _confirmDelete,
+                  isLoading: _isDeleting,
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 32),
+        ],
+      ),
+    );
+  }
+
+  Widget _actionBtn({
+    required IconData? icon,
+    required String label,
+    required Color color,
+    required Color bg,
+    required VoidCallback onTap,
+    bool isLoading = false,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Column(
+        children: [
+          CircleAvatar(
+            radius: 28,
+            backgroundColor: bg,
+            child: isLoading
+                ? SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: color,
+                    ),
+                  )
+                : Icon(icon, color: color, size: 22),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            label,
+            style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
           ),
         ],
       ),
