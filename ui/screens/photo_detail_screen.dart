@@ -89,7 +89,7 @@ class _PhotoDetailScreenState extends State<PhotoDetailScreen> {
       Navigator.pop(context, true);
     }
   }
-  Future<void> _renamePhoto() async {
+  Future<void> renamePhoto() async {
     final controller = TextEditingController(text: widget.photo.name);
     final newName = await showDialog<String>(
       context: context,
@@ -205,7 +205,7 @@ class _PhotoDetailScreenState extends State<PhotoDetailScreen> {
                   label: 'Rename',
                   color: Colors.orange,
                   bg: const Color(0xFFFFF3E0),
-                  onTap: _renamePhoto,
+                  onTap: renamePhoto,
                 ),
                 _actionBtn(
                   icon: _isSaving ? null : Icons.download_outlined,
