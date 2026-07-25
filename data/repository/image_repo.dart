@@ -3,7 +3,7 @@ import 'dart:convert';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:real_final_project/model/image.dart';
+import '../../model/image.dart';
 
 class ImageRepo {
   final _db = FirebaseDatabase.instance.ref();
@@ -64,5 +64,9 @@ class ImageRepo {
 
   Future<void> deletePhoto(String photoId) async {
     await _photoRef.child(photoId).remove();
+  }
+
+  Future<void> deleteAllPhotos() async {
+    await _photoRef.remove();
   }
 }

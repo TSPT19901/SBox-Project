@@ -1,15 +1,15 @@
 import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
-
+import 'settings_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:media_store_plus/media_store_plus.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
-import '/data/repository/image_repo.dart';
-import '/model/image.dart';
-import '/ui/screens/add_photo_screen.dart';
-import '/ui/screens/photo_detail_screen.dart';
+import '../../data/repository/image_repo.dart';
+import '../../model/image.dart';
+import 'add_photo_screen.dart';
+import 'photo_detail_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -224,13 +224,29 @@ class _HomeScreenState extends State<HomeScreen> {
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
-                            CircleAvatar(
-                              radius: 26,
-                              backgroundColor: const Color(0xFFEAE4FF),
-                              backgroundImage: const AssetImage(
-                                'assets/images/bear_avatar.png',
+                            GestureDetector(
+                              onTap: () async {
+                                final photosChanged =
+                                    await Navigator.push<bool>(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (_) => const SettingsScreen(),
+                                      ),
+                                    );
+
+                                if (photosChanged == true) {
+                                  await _loadPhotos();
+                                }
+                              },
+                              child: const CircleAvatar(
+                                radius: 26,
+                                backgroundColor: Color(0xFFEAE4FF),
+                                backgroundImage: AssetImage(
+                                  'assets/images/bear_avatar.png',
+                                ),
                               ),
                             ),
+
                           ],
                         ),
                         const SizedBox(height: 24),

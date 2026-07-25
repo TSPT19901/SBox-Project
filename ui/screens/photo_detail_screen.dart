@@ -4,8 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:media_store_plus/media_store_plus.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
-import '/data/repository/image_repo.dart';
-import '/model/image.dart';
+import '../../data/repository/image_repo.dart';
+import '../../model/image.dart';
 
 class PhotoDetailScreen extends StatefulWidget {
   final Photo photo;
