@@ -75,12 +75,9 @@ class _AddPhotoScreenState extends State<AddPhotoScreen> {
                     style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 8),
-                  const Text(
-                    'Where would you like to add your photo from?',
-                    style: TextStyle(color: Colors.grey, fontSize: 14),
-                  ),
+
                   const SizedBox(height: 32),
-                  _sourceCard(
+                  sourceCard(
                     icon: Icons.camera_alt_outlined,
                     iconBg: const Color(0xFFEDE7F6),
                     iconColor: Colors.deepPurple,
@@ -89,7 +86,7 @@ class _AddPhotoScreenState extends State<AddPhotoScreen> {
                     onTap: _pickFromCamera,
                   ),
                   const SizedBox(height: 16),
-                  _sourceCard(
+                  sourceCard(
                     icon: Icons.photo_library_outlined,
                     iconBg: const Color(0xFFFCE4EC),
                     iconColor: Colors.pinkAccent,
@@ -103,7 +100,7 @@ class _AddPhotoScreenState extends State<AddPhotoScreen> {
     );
   }
 
-  Widget _sourceCard({
+  Widget sourceCard({
     required IconData icon,
     required Color iconBg,
     required Color iconColor,

@@ -1,15 +1,14 @@
 import 'dart:convert';
 import 'dart:io';
-import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:media_store_plus/media_store_plus.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
-import '/data/repository/image_repo.dart';
-import '/model/image.dart';
-import '/ui/screens/add_photo_screen.dart';
-import '/ui/screens/photo_detail_screen.dart';
+import '../../data/repository/image_repo.dart';
+import '../../model/image.dart';
+import 'add_photo_screen.dart';
+import 'photo_detail_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});

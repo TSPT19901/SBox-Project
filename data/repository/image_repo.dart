@@ -65,4 +65,8 @@ class ImageRepo {
   Future<void> deletePhoto(String photoId) async {
     await _photoRef.child(photoId).remove();
   }
+
+  Future<void> renamePhoto(String id, String newName) async {
+    await _photoRef.child(id).update({'name': newName});
+  }
 }
