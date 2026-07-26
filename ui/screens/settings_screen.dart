@@ -5,12 +5,12 @@ import '../../data/repository/image_repo.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
+
   @override
   State<SettingsScreen> createState() => _SettingsScreenState();
 }
 
 class _SettingsScreenState extends State<SettingsScreen> {
-  bool autoLock = true;
   final ImageRepo imageRepo = ImageRepo();
   bool _isRemovingPhotos = false;
 
@@ -261,15 +261,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
             onTap: _changePassword,
             trailing: const Icon(Icons.chevron_right),
           ),
-          _tile(
-            Icons.timer_outlined,
-            'Auto lock',
-            'After 15 minutes',
-            trailing: Switch(
-              value: autoLock,
-              onChanged: (v) => setState(() => autoLock = v),
-            ),
-          ),
           _title('STORAGE'),
           _tile(
             Icons.delete_sweep_outlined,
@@ -291,7 +282,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
           const SizedBox(height: 24),
           SizedBox(
             width: double.infinity,
-            child: OutlinedButton(
+            height: 56,
+            child: ElevatedButton(
               onPressed: () async {
                 await FirebaseAuth.instance.signOut();
 
@@ -303,10 +295,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   (route) => false,
                 );
               },
-              style: OutlinedButton.styleFrom(
-                foregroundColor: const Color(0xFF6750E8),
-                side: const BorderSide(color: Color(0xFF6750E8), width: 1.5),
-                padding: const EdgeInsets.symmetric(vertical: 16),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF7C6FCD),
+                foregroundColor: Colors.white,
+                elevation: 0,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(16),
                 ),
