@@ -4,8 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:media_store_plus/media_store_plus.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
-import '/data/repository/image_repo.dart';
-import '/model/image.dart';
+import '../../data/repository/image_repo.dart';
+import '../../model/image.dart';
 
 class PhotoDetailScreen extends StatefulWidget {
   final Photo photo;
@@ -89,7 +89,8 @@ class _PhotoDetailScreenState extends State<PhotoDetailScreen> {
       Navigator.pop(context, true);
     }
   }
-  Future<void> renamePhoto() async {
+
+  Future<void> _renamePhoto() async {
     final controller = TextEditingController(text: widget.photo.name);
     final newName = await showDialog<String>(
       context: context,
@@ -205,7 +206,7 @@ class _PhotoDetailScreenState extends State<PhotoDetailScreen> {
                   label: 'Rename',
                   color: Colors.orange,
                   bg: const Color(0xFFFFF3E0),
-                  onTap: renamePhoto,
+                  onTap: _renamePhoto,
                 ),
                 _actionBtn(
                   icon: _isSaving ? null : Icons.download_outlined,

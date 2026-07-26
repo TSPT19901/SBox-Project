@@ -3,7 +3,7 @@ import 'dart:convert';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:real_final_project/model/image.dart';
+import '../../model/image.dart';
 
 class ImageRepo {
   final _db = FirebaseDatabase.instance.ref();
@@ -52,9 +52,7 @@ class ImageRepo {
     final data = Map<String, dynamic>.from(snapshot.value as Map);
 
     data.forEach((key, value) {
-      photos.add(
-        Photo.fromMap(key, Map<String, dynamic>.from(value as Map)),
-      );
+      photos.add(Photo.fromMap(key, Map<String, dynamic>.from(value as Map)));
     });
 
     photos.sort((a, b) => b.createdAt.compareTo(a.createdAt));
@@ -66,7 +64,15 @@ class ImageRepo {
     await _photoRef.child(photoId).remove();
   }
 
+
   Future<void> renamePhoto(String id, String newName) async {
     await _photoRef.child(id).update({'name': newName});
   }
+
+
+  Future<void> deleteAllPhotos() async {
+    await _photoRef.remove();
+  }
+
+  
 }
