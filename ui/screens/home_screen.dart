@@ -4,7 +4,6 @@ import 'settings_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:media_store_plus/media_store_plus.dart';
 import 'package:path_provider/path_provider.dart';
-// import 'package:permission_handler/permission_handler.dart';
 import '../../data/repository/image_repo.dart';
 import '../../model/image.dart';
 import 'add_photo_screen.dart';
@@ -62,46 +61,6 @@ class _HomeScreenState extends State<HomeScreen> {
       }
     });
   }
-
-  // Future<void> _saveSelected() async {
-  //   final status = await Permission.storage.request();
-  //   if (!status.isGranted) {
-  //     if (!mounted) return;
-  //     ScaffoldMessenger.of(context).showSnackBar(
-  //       const SnackBar(content: Text('Permission denied. Cannot save photos.')),
-  //     );
-  //     return;
-  //   }
-
-  //   final selected = _photos.where((p) => _selectedIds.contains(p.id)).toList();
-  //   int saved = 0;
-
-  //   final tempDir = await getTemporaryDirectory();
-
-  //   for (final photo in selected) {
-  //     try {
-  //       final bytes = base64Decode(photo.base64);
-  //       final tempFile = File('${tempDir.path}/${photo.name}.${photo.type}');
-  //       await tempFile.writeAsBytes(bytes);
-  //       await MediaStore().saveFile(
-  //         tempFilePath: tempFile.path,
-  //         dirType: DirType.photo,
-  //         dirName: DirName.pictures,
-  //       );
-  //       saved++;
-  //     } catch (e) {
-  //       debugPrint('Save error: $e');
-  //       ScaffoldMessenger.of(
-  //         context,
-  //       ).showSnackBar(SnackBar(content: Text('Error: $e')));
-  //     }
-  //   }
-
-  //   _exitSelectionMode();
-  //   ScaffoldMessenger.of(context).showSnackBar(
-  //     SnackBar(content: Text('$saved photo(s) saved to gallery!')),
-  //   );
-  // }
   
   Future<void> _saveSelected() async {
     final selectedPhotos = _photos
