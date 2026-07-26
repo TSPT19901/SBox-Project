@@ -4,7 +4,7 @@ import 'settings_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:media_store_plus/media_store_plus.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:permission_handler/permission_handler.dart';
+// import 'package:permission_handler/permission_handler.dart';
 import '../../data/repository/image_repo.dart';
 import '../../model/image.dart';
 import 'add_photo_screen.dart';
@@ -63,44 +63,109 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
+  // Future<void> _saveSelected() async {
+  //   final status = await Permission.storage.request();
+  //   if (!status.isGranted) {
+  //     if (!mounted) return;
+  //     ScaffoldMessenger.of(context).showSnackBar(
+  //       const SnackBar(content: Text('Permission denied. Cannot save photos.')),
+  //     );
+  //     return;
+  //   }
+
+  //   final selected = _photos.where((p) => _selectedIds.contains(p.id)).toList();
+  //   int saved = 0;
+
+  //   final tempDir = await getTemporaryDirectory();
+
+  //   for (final photo in selected) {
+  //     try {
+  //       final bytes = base64Decode(photo.base64);
+  //       final tempFile = File('${tempDir.path}/${photo.name}.${photo.type}');
+  //       await tempFile.writeAsBytes(bytes);
+  //       await MediaStore().saveFile(
+  //         tempFilePath: tempFile.path,
+  //         dirType: DirType.photo,
+  //         dirName: DirName.pictures,
+  //       );
+  //       saved++;
+  //     } catch (e) {
+  //       debugPrint('Save error: $e');
+  //       ScaffoldMessenger.of(
+  //         context,
+  //       ).showSnackBar(SnackBar(content: Text('Error: $e')));
+  //     }
+  //   }
+
+  //   _exitSelectionMode();
+  //   ScaffoldMessenger.of(context).showSnackBar(
+  //     SnackBar(content: Text('$saved photo(s) saved to gallery!')),
+  //   );
+  // }
+  
   Future<void> _saveSelected() async {
-    final status = await Permission.storage.request();
-    if (!status.isGranted) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Permission denied. Cannot save photos.')),
-      );
+    final selectedPhotos = _photos
+        .where((photo) => _selectedIds.contains(photo.id))
+        .toList();
+
+    if (selectedPhotos.isEmpty) {
       return;
     }
 
-    final selected = _photos.where((p) => _selectedIds.contains(p.id)).toList();
-    int saved = 0;
+    int savedCount = 0;
+    int failedCount = 0;
 
-    final tempDir = await getTemporaryDirectory();
+    try {
+      final tempDirectory = await getTemporaryDirectory();
 
-    for (final photo in selected) {
-      try {
-        final bytes = base64Decode(photo.base64);
-        final tempFile = File('${tempDir.path}/${photo.name}.${photo.type}');
-        await tempFile.writeAsBytes(bytes);
-        await MediaStore().saveFile(
-          tempFilePath: tempFile.path,
-          dirType: DirType.photo,
-          dirName: DirName.pictures,
-        );
-        saved++;
-      } catch (e) {
-        debugPrint('Save error: $e');
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Error: $e')));
+      for (final photo in selectedPhotos) {
+        try {
+          // Convert the Base64 text from Firebase back into image bytes.
+          final imageBytes = base64Decode(photo.base64);
+
+          // photo.name normally already includes the extension.
+          final tempFile = File('${tempDirectory.path}/${photo.name}');
+
+          // Create a temporary image file.
+          await tempFile.writeAsBytes(imageBytes, flush: true);
+
+          // Save the temporary image into the phone's Pictures folder.
+          await MediaStore().saveFile(
+            tempFilePath: tempFile.path,
+            dirType: DirType.photo,
+            dirName: DirName.pictures,
+          );
+
+          savedCount++;
+        } catch (error) {
+          failedCount++;
+
+          debugPrint('Unable to save ${photo.name}: $error');
+        }
       }
-    }
 
-    _exitSelectionMode();
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('$saved photo(s) saved to gallery!')),
-    );
+      if (!mounted) return;
+
+      _exitSelectionMode();
+
+      String resultMessage = '$savedCount photo(s) saved to the gallery.';
+
+      if (failedCount > 0) {
+        resultMessage = '$savedCount photo(s) saved, $failedCount failed.';
+      }
+
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(resultMessage)));
+    } catch (error) {
+      debugPrint('Save selected photos error: $error');
+
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Unable to save photos: $error')));
+    }
   }
 
   Widget _buildQuickActions() {
