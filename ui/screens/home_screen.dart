@@ -1,6 +1,5 @@
 import 'dart:convert';
 import 'dart:io';
-import 'dart:typed_data';
 import 'settings_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:media_store_plus/media_store_plus.dart';
